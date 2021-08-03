@@ -4,11 +4,59 @@ This package lets You use redis as Your cache with [fiber.v2](https://github.com
 
 # Usage
 
-TODO: finish this section
+When You are setting up cache import
+```
+  ...
+	"github.com/JakubOboza/rstore"
+	"github.com/gofiber/fiber/v2/middleware/cache"
+```
+
+Set the rstore as storage for config setup
+
+```
+cache.Config{
+  Storage:      rstore.New(rstore.WithAddr("localhost:6379")),
+}))
+
+```
 
 # Example
 
-TODO: full example of usage
+```
+import (
+	"time"
+
+	"github.com/JakubOboza/rstore"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cache"
+)
+
+func main() {
+
+	app := fiber.New()
+
+	app.Use(cache.New(cache.Config{
+		Next: func(c *fiber.Ctx) bool {
+			return c.Query("refresh") == "true"
+		},
+		Expiration:   30 * time.Minute,
+		CacheControl: true,
+		Storage:      rstore.New(rstore.WithAddr("localhost:6379")),
+	}))
+
+	app.Get("/cache-test", func(c *fiber.Ctx) error {
+		return c.SendString(time.Now().String())
+	})
+
+	app.Listen(":3000")
+
+}
+```
+
+Start redis on port 6379, start binary with example and
+```
+curl localhost:3000/cache-test
+```
 
 # Testing
 
